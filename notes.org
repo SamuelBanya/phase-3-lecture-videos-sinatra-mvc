@@ -1,0 +1,52 @@
+MVC: Model View Controller
+
+What This Does
+- This allows for a separation of concerns so that each component has a specific purpose
+
+Related Relationship Example
+- You can think of the 'MVC' like a restaurant
+- The 'waiter' at the restaurant is the 'Controller' of the MVC since they take orders from the customer
+- The kitchen then takes that request, and sends a response back to the Controller who then brings the response back to the customer
+- Model: User
+- Controller: Waiter (actual 'Server' (computer based))
+- Kitchen: Model
+
+Example 'MVC Model' (Model View Controller) Relationship:
+#+BEGIN_SRC ruby
+class Game < ActiveRecord::Base
+	has_many :reviews
+	has_many :users, through: :reviews
+end
+#+END_SRC
+
+Example 'MVC Controller' which connects the 'Model' and sends the response to the 'View'
+#+BEGIN_SRC ruby
+class ApplicationController < Sinatra::Base
+	set :default_content_type, "application/json"
+
+	get "/games" do 
+		games = Game.all.order(:title).limit(10)
+		games.to_json()
+	end
+
+	# Use the :id syntax to create a dynamic route
+	get "/games:id" do
+		game = Game.find(params[:id])
+
+		# Include associated reviews in the JSON response
+		game.to_json(only: [:id, :title, :genre, :price], include: {
+			reviews: { only: [:comment, :score,], include: {
+				user: { only [:name] }
+			}}
+		})
+	end
+end
+#+END_SRC
+
+Overall Workflow Of Ruby And React In The 'MVC' Model View Controller:
+- The 'View' in this model will be controlled with React on the frontend of the application.
+- The user will interact with the 'View' to produce a request which will be sent to the 'Controller' which will be sent to the 'Model'.
+- The 'Model' will then process this request, and create a response which will then be sent back to the 'Controller'
+- The 'Controller' will then send back the response to the 'View' for the user to see
+
+
